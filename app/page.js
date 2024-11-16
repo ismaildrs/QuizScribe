@@ -45,7 +45,7 @@ export default function Component() {
               </Link>
               {session && session.data ? (
                 <Button variant="outline" className="flex  items-center gap-2 ">
-                  <Link href="/profile" className="flex items-center gap-2">
+                  <Link href="/dashboard" className="flex items-center gap-2">
                     <img
                       src={session.data.user.image}
                       className="w-8 rounded-full"
