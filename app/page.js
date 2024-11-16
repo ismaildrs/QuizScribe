@@ -43,11 +43,7 @@ export default function Component() {
               >
                 Pricing
               </Link>
-              {!session ? (
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Link href="/login">Sign in with Google</Link>
-                </Button>
-              ) : (
+              {session && session.data ? (
                 <Button variant="outline" className="flex  items-center gap-2 ">
                   <Link href="/profile" className="flex items-center gap-2">
                     <img
@@ -56,6 +52,10 @@ export default function Component() {
                     />
                     <span>Dashboard</span>
                   </Link>
+                </Button>
+              ) : (
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Link href="/login">Sign in with Google</Link>
                 </Button>
               )}
             </nav>
