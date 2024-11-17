@@ -1,6 +1,10 @@
 import localFont from "next/font/local";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
+import ShimmerButton from "@/components/ui/shimmer-button";
+import { Moon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Wrapper from "@/components/wrapper/wrapper";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -25,7 +29,7 @@ export default function RootLayout({ children }) {
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          {children}
+          <Wrapper>{children}</Wrapper>
         </body>
       </SessionProvider>
     </html>
