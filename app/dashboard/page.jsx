@@ -14,6 +14,15 @@ import { Input } from "@/components/ui/input";
 import { Folder, ChevronRight, User, Plus } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import LoadingComponent from "@/components/ui/Loading";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const initialFolders = [];
 
@@ -21,7 +30,12 @@ export default function Dashboard() {
   const [folders, setFolders] = useState(initialFolders);
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [newFolderName, setNewFolderName] = useState("");
+  const [videoId, setVideoId] = useState("");
+  const [transformError, setTransformError] = useState("");
+  const [transformDialog, setTransformDialog] = useState(false);
   const session = useSession();
+
+  if (!session || !session.data) return <LoadingComponent />;
 
   const addFolder = () => {
     if (newFolderName.trim() !== "") {
@@ -35,30 +49,52 @@ export default function Dashboard() {
     }
   };
 
+  const handleTransform = async () => {
+    setTransformDialog(true);
+    try {
+      const response = await fetch(`/api/upload?videoId=${videoId}`, {
+        method: "GET",
+      });
+      const result = await response.json();
+    } catch (e) {
+      setError(e);
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
+      <Dialog open={transformDialog} onOpenChange={setTransformDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Processing Video</DialogTitle>
+            <DialogDescription>
+              This action may take seconds or minutes, depending on the video
+              length.
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
         <Link href="/" className="flex items-center justify-center">
           <span className="text-2xl font-bold">Similan</span>
         </Link>
         <nav className="ml-auto flex items-center gap-4 sm:gap-6">
           <Button variant="ghost" className="text-sm font-medium">
-            Dashboard
-          </Button>
-          <Button variant="ghost" className="text-sm font-medium">
             Analytics
           </Button>
-          <Avatar>
-            <AvatarImage src={session.data.user.image}  alt="User" />
-            <AvatarFallback>
-              <User />
-            </AvatarFallback>
-          </Avatar>
+          {session.data && (
+            <Avatar>
+              <AvatarImage src={session.data.user.image} alt="User" />
+              <AvatarFallback>
+                <User />
+              </AvatarFallback>
+            </Avatar>
+          )}
         </nav>
       </header>
       <main className="flex-1 p-4 md:p-6 space-y-6">
         <Card>
-          {session && session.data && (
+          {session.data && (
             <>
               <CardHeader>
                 <CardTitle>Profile</CardTitle>
@@ -85,6 +121,40 @@ export default function Dashboard() {
               </CardContent>
             </>
           )}
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Transform YouTube Video</CardTitle>
+            <CardDescription>
+              Enter a YouTube video link to transform it into interactive
+              learning content
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex space-x-2">
+              <Input
+                placeholder="Paste YouTube video URL"
+                value={videoId}
+                onChange={(e) => setVideoId(e.target.value)}
+                className="flex-1"
+              />
+              <Button
+                onClick={() => {
+                  if (!videoId) {
+                    setTransformError("This field should be field");
+                    return;
+                  } else {
+                    setTransformError("");
+                  }
+                  setTransformDialog(true);
+                }}
+              >
+                Transform
+              </Button>
+            </div>
+
+            <p className="mt-2 text-red-500">{transformError}</p>
+          </CardContent>
         </Card>
         <Card>
           <CardHeader>

@@ -4,7 +4,6 @@ import { useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
-import { Youtube } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +12,7 @@ import WordPullUp from "@/components/ui/word-pull-up";
 import FlickeringGrid from "@/components/ui/flickering-grid";
 import OrbitingCircles from "@/components/ui/orbiting-circles";
 import { themeContext } from "@/lib/Contexts";
+import LoadingComponent from "@/components/ui/Loading";
 
 export default function Component() {
   const { theme, setTheme } = useContext(themeContext);
@@ -36,6 +36,8 @@ export default function Component() {
       setAnimationColor("#ECECEC");
     }
   }, [theme]);
+
+  if (!session) return <LoadingComponent />;
 
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
@@ -74,9 +76,12 @@ export default function Component() {
           <Button variant="ghost" onClick={() => scrollToSection("pricing")}>
             Pricing
           </Button>
-          {session && session.data ? (
+          {session.data ? (
             <Button variant="outline" className="flex items-center gap-2">
-              <Link href="/dashboard" className="flex items-center gap-2 text-black" >
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 text-black"
+              >
                 <img
                   src={session.data.user.image}
                   alt="User Avatar"
