@@ -3,12 +3,12 @@
 import { themeContext } from "@/lib/Contexts";
 import { useContext, useState } from "react";
 import { Button } from "../ui/button";
-import { Moon } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 
 export default function Wrapper({ children }) {
   const [theme, setTheme] = useState();
   return (
-    <themeContext.Provider value={{theme, setTheme}}>
+    <themeContext.Provider value={{ theme, setTheme }}>
       {children}
       <div className="sticky z-50 bottom-5 right-5 w-fit">
         <Button
@@ -17,7 +17,7 @@ export default function Wrapper({ children }) {
             setTheme(theme === "dark" ? "light" : "dark");
           }}
         >
-          <Moon />
+          {theme === "light" ? <Moon /> : <Sun />}
         </Button>
       </div>
     </themeContext.Provider>

@@ -10,7 +10,7 @@ export async function GET(req) {
   if (!videoId) {
     return NextResponse.json(
       { message: "videoId is required" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -26,24 +26,28 @@ export async function GET(req) {
     }
 
     const data = await response.json();
-
+    
     if (data.items.length === 0) {
       return NextResponse.json(
         { message: "No video found with the provided videoId" },
-        { status: 404 },
+        { status: 404 }
       );
     }
-
+    
     const video = data.items[0];
     const title = video.snippet.title;
     const thumbnail = video.snippet.thumbnails.high.url;
+    const description = video.snippet.description;
+    const channelTitle = video.snippet.channelTitle;
+    const defaultLanguage = video.snippet.defaultLanguage;
+    const tags = video.snippet.tags;
 
-    return NextResponse.json({ title, thumbnail }, { status: 200 });
+    return NextResponse.json({ title, thumbnail , description, channelTitle, defaultLanguage, tags}, { status: 200 });
   } catch (error) {
     console.error("Error fetching video info:", error);
     return NextResponse.json(
       { message: "Error: " + error.message },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

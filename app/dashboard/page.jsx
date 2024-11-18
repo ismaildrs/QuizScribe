@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,12 +21,13 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
+import { themeContext } from "@/lib/Contexts";
 
 const initialFolders = [];
 
 export default function Dashboard() {
+  const { theme } = useContext(themeContext);
   const [folders, setFolders] = useState(initialFolders);
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [newFolderName, setNewFolderName] = useState("");
@@ -44,6 +45,10 @@ export default function Dashboard() {
   const [result, setResult] = useState({});
   const session = useSession();
 
+  useEffect(() => {
+    document.body.className = theme === "dark" ? "dark" : "";
+  }, [theme]);
+
   if (!session || !session.data) return <LoadingComponent />;
 
   const addFolder = () => {
@@ -59,8 +64,10 @@ export default function Dashboard() {
   };
 
   const handleTransform = async (id) => {
-    setTransformDialog(true);
-    setIsLoading(true);
+    if (!isProcessing) setIsLoading(true);
+    else {
+      return;
+    }
     try {
       const response = await fetch(`/api/video?videoId=${id}`, {
         method: "GET",
@@ -76,6 +83,7 @@ export default function Dashboard() {
       setIsLoading(false);
     }
   };
+
   const handlePrompt = async () => {
     setIsImproving(false);
     setIsProcessing(true);
@@ -89,19 +97,22 @@ export default function Dashboard() {
       });
       if (response.ok) {
         const result = await response.json();
+        console.log(result);
         setResult(result);
         setIsProcessing(false);
         setIsComplete(true);
-      } else {
       }
     } catch (e) {
+      // Handle error
     } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div
+      className={`flex flex-col min-h-screen ${theme === "dark" ? "dark" : ""}`}
+    >
       <Dialog open={transformDialog} onOpenChange={setTransformDialog}>
         <DialogContent>
           <DialogHeader>
@@ -124,14 +135,12 @@ export default function Dashboard() {
                       alt={videoTitle}
                       className="rounded-lg"
                     />
-
                     {isProcessing && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
                         <Loader2 className="w-8 h-8 animate-spin text-white" />
                       </div>
                     )}
                   </div>
-
                   {videoTitle && <p className="font-semibold">{videoTitle}</p>}
                   {isImproving && (
                     <div className="flex my-2 space-x-2 items-center">
@@ -141,13 +150,7 @@ export default function Dashboard() {
                         onChange={(e) => setVideoPrompt(e.target.value)}
                         className="flex-1"
                       />
-                      <Button
-                        onClick={async () => {
-                          await handlePrompt();
-                        }}
-                      >
-                        Prompt
-                      </Button>
+                      <Button onClick={handlePrompt}>Prompt</Button>
                     </div>
                   )}
                 </div>
@@ -160,7 +163,7 @@ export default function Dashboard() {
                       <CardTitle>Flashcards</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p>{result.flashCards.length} Flashcards</p>
+                      <p>{result.flashCards?.length} Flashcards</p>
                     </CardContent>
                   </Card>
                   <Card>
@@ -168,12 +171,12 @@ export default function Dashboard() {
                       <CardTitle>Quizzes</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p>{result.quizzes.length} Quizz questions</p>
+                      <p>{result.quizzes?.length} Quiz questions</p>
                     </CardContent>
                   </Card>
                 </div>
                 <Button asChild>
-                  <Link href="/learning-materials">
+                  <Link href={`/content/${videoId}`}>
                     View Learning Materials
                   </Link>
                 </Button>
@@ -182,12 +185,15 @@ export default function Dashboard() {
           </div>
         </DialogContent>
       </Dialog>
-      <header className="px-4 lg:px-6 h-14 flex items-center border-b">
+      <header className="px-4 lg:px-6 h-14 flex items-center border-b dark:border-gray-700">
         <Link href="/" className="flex items-center justify-center">
-          <span className="text-2xl font-bold">Similan</span>
+          <span className="text-2xl font-bold dark:text-white">Similan</span>
         </Link>
         <nav className="ml-auto flex items-center gap-4 sm:gap-6">
-          <Button variant="ghost" className="text-sm font-medium">
+          <Button
+            variant="ghost"
+            className="text-sm font-medium dark:text-gray-300"
+          >
             Analytics
           </Button>
           {session.data && (
@@ -200,13 +206,13 @@ export default function Dashboard() {
           )}
         </nav>
       </header>
-      <main className="flex-1 p-4 md:p-6 space-y-6">
-        <Card>
+      <main className="flex-1 p-4 md:p-6 space-y-6 dark:bg-gray-900">
+        <Card className="dark:bg-gray-800">
           {session.data && (
             <>
               <CardHeader>
-                <CardTitle>Profile</CardTitle>
-                <CardDescription>
+                <CardTitle className="dark:text-white">Profile</CardTitle>
+                <CardDescription className="dark:text-gray-400">
                   Your learning progress and achievements
                 </CardDescription>
               </CardHeader>
@@ -218,11 +224,13 @@ export default function Dashboard() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h2 className="text-2xl font-bold">
+                  <h2 className="text-2xl font-bold dark:text-white">
                     {session.data.user.name}
                   </h2>
-                  <p className="text-muted-foreground">Learning enthusiast</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-muted-foreground dark:text-gray-400">
+                    Learning enthusiast
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1 dark:text-gray-400">
                     {session.data.user.email}
                   </p>
                 </div>
@@ -230,10 +238,12 @@ export default function Dashboard() {
             </>
           )}
         </Card>
-        <Card>
+        <Card className="dark:bg-gray-800">
           <CardHeader>
-            <CardTitle>Transform YouTube Video</CardTitle>
-            <CardDescription>
+            <CardTitle className="dark:text-white">
+              Transform YouTube Video
+            </CardTitle>
+            <CardDescription className="dark:text-gray-400">
               Enter a YouTube video link to transform it into interactive
               learning content
             </CardDescription>
@@ -241,21 +251,19 @@ export default function Dashboard() {
           <CardContent>
             <div className="flex space-x-2">
               <Input
-                placeholder="Paste Youtube prompt"
+                placeholder="Paste YouTube video URL"
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
-                className="flex-1"
+                className="flex-1 dark:bg-gray-700 dark:text-white"
               />
               <Button
-                onClick={async () => {
-                  if (!videoUrl) {
-                    return;
-                  }
-
+                onClick={() => {
+                  if (!videoUrl) return;
                   const url = new URL(videoUrl);
                   const id = url.searchParams.get("v");
                   setVideoId(id);
-                  await handleTransform(id);
+                  setTransformDialog(true);
+                  if (!isComplete) handleTransform(id);
                 }}
               >
                 Transform
@@ -263,10 +271,10 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="dark:bg-gray-800">
           <CardHeader>
-            <CardTitle>Your Folders</CardTitle>
-            <CardDescription>
+            <CardTitle className="dark:text-white">Your Folders</CardTitle>
+            <CardDescription className="dark:text-gray-400">
               Click on a folder to view its contents
             </CardDescription>
           </CardHeader>
@@ -277,6 +285,7 @@ export default function Dashboard() {
                   placeholder="New folder name"
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
+                  className="dark:bg-gray-700 dark:text-white"
                 />
                 <Button onClick={addFolder}>
                   <Plus className="mr-2 h-4 w-4" />
@@ -290,7 +299,7 @@ export default function Dashboard() {
                     variant="outline"
                     className={`w-full justify-start text-left ${
                       selectedFolder === folder.id ? "bg-muted" : ""
-                    }`}
+                    } dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600`}
                     onClick={() => setSelectedFolder(folder.id)}
                   >
                     <Folder className="mr-2 h-4 w-4" />
@@ -304,15 +313,21 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </main>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">
+      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t dark:border-gray-700 dark:bg-gray-800">
+        <p className="text-xs text-muted-foreground dark:text-gray-400">
           © 2024 Similan. All rights reserved.
         </p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-          <Link href="#" className="text-xs hover:underline underline-offset-4">
+          <Link
+            href="#"
+            className="text-xs hover:underline underline-offset-4 dark:text-gray-300"
+          >
             Terms of Service
           </Link>
-          <Link href="#" className="text-xs hover:underline underline-offset-4">
+          <Link
+            href="#"
+            className="text-xs hover:underline underline-offset-4 dark:text-gray-300"
+          >
             Privacy
           </Link>
         </nav>

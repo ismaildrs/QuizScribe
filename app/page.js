@@ -13,11 +13,13 @@ import FlickeringGrid from "@/components/ui/flickering-grid";
 import OrbitingCircles from "@/components/ui/orbiting-circles";
 import { themeContext } from "@/lib/Contexts";
 import LoadingComponent from "@/components/ui/Loading";
+import { useRouter } from "next/navigation";
 
 export default function Component() {
   const { theme, setTheme } = useContext(themeContext);
   const [videoUrl, setVideoUrl] = useState("");
   const session = useSession();
+  const router = useRouter();
   const [bgColor, setBgColor] = useState("");
   const [subBgColor, setSubBgColor] = useState("");
   const [textColor, setTextColor] = useState("");
@@ -38,6 +40,9 @@ export default function Component() {
   }, [theme]);
 
   if (!session) return <LoadingComponent />;
+  if (session.data) {
+    router.push("/dashboard");
+  }
 
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
