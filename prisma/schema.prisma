@@ -8,13 +8,14 @@ generator client {
 }
 
 model User {
-  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
-  email         String?         @unique
+  email         String?   @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
+  folders       Folder[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -60,4 +61,52 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Folder {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  name   String // Name of the folder
+  userId String  @db.ObjectId
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videos Video[] // A folder can have multiple videos
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Video {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  title      String // Title of the video
+  thumbnail  String // URL or path to the thumbnail
+  url        String // URL or path to the video
+  folderId   String      @db.ObjectId
+  folder     Folder      @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  flashcards Flashcard[] // Flashcards related to this video
+  quizzes    Quiz[] // Quizzes related to this video
+  summary    String? // Summary specific to this video
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Flashcard {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  question String // Flashcard question
+  answer   String // Flashcard answer
+  videoId  String @db.ObjectId
+  video    Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Quiz {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  question String // Quiz question
+  options  String[] // Quiz options (multiple choice)
+  videoId  String   @db.ObjectId
+  video    Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

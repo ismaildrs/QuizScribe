@@ -93,6 +93,9 @@ export default function Dashboard() {
         body: JSON.stringify({
           videoId: videoId,
           prompt: videoPrompt,
+          title: videoTitle,
+          url: videoUrl,
+          thumbnail: videoImgUrl,
         }),
       });
       if (response.ok) {
