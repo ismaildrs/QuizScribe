@@ -45,24 +45,6 @@ export default function Dashboard() {
   const [result, setResult] = useState({});
   const session = useSession();
 
-  useEffect(() => {
-    document.body.className = theme === "dark" ? "dark" : "";
-  }, [theme]);
-
-  if (!session || !session.data) return <LoadingComponent />;
-
-  const addFolder = () => {
-    if (newFolderName.trim() !== "") {
-      const newFolder = {
-        id: Date.now().toString(),
-        name: newFolderName.trim(),
-        items: 0,
-      };
-      setFolders([...folders, newFolder]);
-      setNewFolderName("");
-    }
-  };
-
   const handleTransform = async (id) => {
     if (!isProcessing) setIsLoading(true);
     else {
@@ -106,6 +88,40 @@ export default function Dashboard() {
       // Handle error
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  useEffect(() => {
+    const analyzeUrl = async () => {
+      const url = new URL(window.location.href);
+      const params = url.searchParams;
+      const videoId = params.get("v");
+      if (videoId) {
+        setVideoUrl("https://www.youtube.com/watch?v="+videoId);
+        setVideoId(videoId);
+        setTransformDialog(true);
+        await handleTransform();
+      }
+    };
+
+    analyzeUrl();
+  }, []);
+
+  useEffect(() => {
+    document.body.className = theme === "dark" ? "dark" : "";
+  }, [theme]);
+
+  if (!session || !session.data) return <LoadingComponent />;
+
+  const addFolder = () => {
+    if (newFolderName.trim() !== "") {
+      const newFolder = {
+        id: Date.now().toString(),
+        name: newFolderName.trim(),
+        items: 0,
+      };
+      setFolders([...folders, newFolder]);
+      setNewFolderName("");
     }
   };
 
@@ -176,7 +192,7 @@ export default function Dashboard() {
                   </Card>
                 </div>
                 <Button asChild>
-                  <Link href={`/content/${videoId}`}>
+                  <Link href={`/dashboard/${videoId}`}>
                     View Learning Materials
                   </Link>
                 </Button>
