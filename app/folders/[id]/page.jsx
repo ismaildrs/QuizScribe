@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useContext, use } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -196,7 +196,7 @@ export default function FolderDetailsPage({ params }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const resolvedParams = use(params);
+  const resolvedParams = useParams();
   const folderId = resolvedParams.id;
 
   useEffect(() => {
@@ -210,6 +210,7 @@ export default function FolderDetailsPage({ params }) {
         const res = await fetch(`/api/folders/${folderId}`);
         if (!res.ok) throw new Error("Failed to fetch folder details");
         const data = await res.json();
+        console.log(data);
         setFolder(data);
       } catch (err) {
         setError(err.message || "An unexpected error occurred.");

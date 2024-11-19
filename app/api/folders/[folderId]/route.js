@@ -39,7 +39,7 @@ export const GET = auth(async function GET(req, { params }) {
       );
     }
 
-    return NextResponse.json(folder);
+    return NextResponse.json(folder, {status:200});
   } catch (error) {
     console.error("Error fetching folder:", error);
     return NextResponse.json(

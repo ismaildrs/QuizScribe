@@ -4,18 +4,19 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
   const body = await req.json();
+  console.log(body);
   const videoId = body.videoId;
   const prompt = body.prompt || "";
-  const folderId = "673ba1601482e162c63696f9"; // Folder ID where the video belongs
+  const folderId = body.folderId; // Folder ID where the video belongs
   const title = body.title || "Untitled Video"; // Optional title for the video
   const url = body.url || ""; // YouTube URL
   const thumbnail = body.thumbnail;
 
   // Validate required fields
-  if (!videoId) {
+  if (!videoId || !folderId) {
     return NextResponse.json(
-      { message: "videoId is required" },
-      { status: 400 },
+      { message: "VideoId and folderId is required" },
+      { status: 400 }
     );
   }
 
@@ -48,16 +49,20 @@ export async function POST(req) {
           })),
         },
       },
+      include: {
+        flashcards: true,
+        quizzes: true,
+      },
     });
 
     return NextResponse.json(
       { message: "Video saved successfully", savedVideo },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (e) {
     return NextResponse.json(
       { message: "Error: " + e.message },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

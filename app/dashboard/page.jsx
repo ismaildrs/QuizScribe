@@ -11,7 +11,15 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Folder, ChevronRight, User, Plus, Loader2 } from "lucide-react";
+import {
+  Folder,
+  ChevronRight,
+  User,
+  Plus,
+  Loader2,
+  FolderRoot,
+  AlertTriangle,
+} from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import LoadingComponent from "@/components/ui/Loading";
@@ -21,14 +29,21 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { themeContext } from "@/lib/Contexts";
-
-const initialFolders = [];
+import { useRouter } from "next/navigation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Dashboard() {
   const { theme } = useContext(themeContext);
-  const [folders, setFolders] = useState(initialFolders);
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [newFolderName, setNewFolderName] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
@@ -40,10 +55,18 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [isImproving, setIsImproving] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isError, setIsError] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [isComplete, setIsComplete] = useState(false);
   const [result, setResult] = useState({});
+  const [folders, setFolders] = useState([]);
+  const [selectedFolderId, setSelectedFolderId] = useState(null);
   const session = useSession();
+  const router = useRouter();
+
+  const showError = (message) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(""), 5000);
+  };
 
   const handleTransform = async (id) => {
     if (!isProcessing) setIsLoading(true);
@@ -60,13 +83,23 @@ export default function Dashboard() {
         setIsImproving(true);
         setVideoTitle(result.title);
         setVideoImgUrl(result.thumbnail);
+      } else {
+        const errorData = await response.json();
+        showError(errorData.message || "Failed to fetch video information");
+        setIsLoading(false);
       }
     } catch (e) {
+      showError("An error occurred while fetching video information");
       setIsLoading(false);
     }
   };
 
   const handlePrompt = async () => {
+    if (!selectedFolderId) {
+      showError("Please select a folder to save the video");
+      return;
+    }
+
     setIsImproving(false);
     setIsProcessing(true);
     try {
@@ -78,35 +111,54 @@ export default function Dashboard() {
           title: videoTitle,
           url: videoUrl,
           thumbnail: videoImgUrl,
+          folderId: selectedFolderId,
         }),
       });
       if (response.ok) {
         const result = await response.json();
-        console.log(result);
         setResult(result);
         setIsProcessing(false);
         setIsComplete(true);
+      } else {
+        const errorData = await response.json();
+        showError(errorData.message || "Failed to process video");
+        setIsProcessing(false);
       }
     } catch (e) {
-      // Handle error
-    } finally {
+      showError("An error occurred while processing the video");
       setIsProcessing(false);
     }
   };
 
   useEffect(() => {
+    const fetchFolders = async () => {
+      try {
+        const response = await fetch("/api/folders", { method: "GET" });
+        if (response.ok) {
+          const result = await response.json();
+          setFolders(result);
+        } else {
+          const errorData = await response.json();
+          showError(errorData.message || "Failed to fetch folders");
+        }
+      } catch (e) {
+        showError("An error occurred while fetching folders");
+      }
+    };
+
     const analyzeUrl = async () => {
       const url = new URL(window.location.href);
       const params = url.searchParams;
       const videoId = params.get("v");
       if (videoId) {
-        setVideoUrl("https://www.youtube.com/watch?v="+videoId);
+        setVideoUrl("https://www.youtube.com/watch?v=" + videoId);
         setVideoId(videoId);
         setTransformDialog(true);
-        await handleTransform();
+        await handleTransform(videoId);
       }
     };
 
+    fetchFolders();
     analyzeUrl();
   }, []);
 
@@ -116,15 +168,27 @@ export default function Dashboard() {
 
   if (!session || !session.data) return <LoadingComponent />;
 
-  const addFolder = () => {
+  const addFolder = async () => {
     if (newFolderName.trim() !== "") {
-      const newFolder = {
-        id: Date.now().toString(),
-        name: newFolderName.trim(),
-        items: 0,
-      };
-      setFolders([...folders, newFolder]);
-      setNewFolderName("");
+      try {
+        const response = await fetch("/api/folders/create", {
+          method: "POST",
+          body: JSON.stringify({
+            name: newFolderName,
+          }),
+        });
+
+        if (response.ok) {
+          const newFolder = await response.json();
+          setFolders([...folders, newFolder]);
+          setNewFolderName("");
+        } else {
+          const errorData = await response.json();
+          showError(errorData.message || "Failed to create folder");
+        }
+      } catch (e) {
+        showError("An error occurred while creating the folder");
+      }
     }
   };
 
@@ -132,6 +196,16 @@ export default function Dashboard() {
     <div
       className={`flex flex-col min-h-screen ${theme === "dark" ? "dark" : ""}`}
     >
+      {/* Error Alert */}
+      {errorMessage && (
+        <div className="fixed top-4 right-4 z-50 w-full max-w-md">
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       <Dialog open={transformDialog} onOpenChange={setTransformDialog}>
         <DialogContent>
           <DialogHeader>
@@ -147,7 +221,7 @@ export default function Dashboard() {
             {(isProcessing || isComplete || isImproving) &&
               videoImgUrl &&
               videoTitle && (
-                <div className="space-y-3">
+                <div className="space-y-3 w-full">
                   <div className="relative flex flex-col gap-2">
                     <img
                       src={videoImgUrl}
@@ -161,16 +235,42 @@ export default function Dashboard() {
                     )}
                   </div>
                   {videoTitle && <p className="font-semibold">{videoTitle}</p>}
+
                   {isImproving && (
-                    <div className="flex my-2 space-x-2 items-center">
-                      <Input
-                        placeholder="What do you want to focus on?"
-                        value={videoPrompt}
-                        onChange={(e) => setVideoPrompt(e.target.value)}
-                        className="flex-1"
-                      />
-                      <Button onClick={handlePrompt}>Prompt</Button>
-                    </div>
+                    <>
+                      <div className="space-y-2">
+                        <Select
+                          onValueChange={(value) => setSelectedFolderId(value)}
+                          value={selectedFolderId || ""}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a folder" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {folders.map((folder) => (
+                              <SelectItem key={folder.id} value={folder.id}>
+                                {folder.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex my-2 space-x-2 items-center">
+                        <Input
+                          placeholder="What do you want to focus on?"
+                          value={videoPrompt}
+                          onChange={(e) => setVideoPrompt(e.target.value)}
+                          className="flex-1"
+                        />
+                        <Button
+                          onClick={handlePrompt}
+                          disabled={!selectedFolderId}
+                        >
+                          Prompt
+                        </Button>
+                      </div>
+                    </>
                   )}
                 </div>
               )}
@@ -182,7 +282,7 @@ export default function Dashboard() {
                       <CardTitle>Flashcards</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p>{result.flashCards?.length} Flashcards</p>
+                      <p>{result.savedVideo.flashcards?.length} Flashcards</p>
                     </CardContent>
                   </Card>
                   <Card>
@@ -190,7 +290,7 @@ export default function Dashboard() {
                       <CardTitle>Quizzes</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p>{result.quizzes?.length} Quiz questions</p>
+                      <p>{result.savedVideo.quizzes?.length} Quiz questions</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -312,18 +412,18 @@ export default function Dashboard() {
                 </Button>
               </div>
               <div className="grid gap-4">
-                {folders.map((folder) => (
+                {folders.map((folder, key) => (
                   <Button
-                    key={folder.id}
+                    key={key}
                     variant="outline"
                     className={`w-full justify-start text-left ${
                       selectedFolder === folder.id ? "bg-muted" : ""
                     } dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600`}
-                    onClick={() => setSelectedFolder(folder.id)}
+                    onClick={() => router.push(`/folders/${folder.id}`)}
                   >
                     <Folder className="mr-2 h-4 w-4" />
                     {folder.name}
-                    <span className="ml-auto">{folder.items} items</span>
+                    <span className="ml-auto"></span>
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 ))}

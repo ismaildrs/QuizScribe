@@ -7,7 +7,7 @@ export const GET = auth(async function GET(req) {
     if (!req.auth) {
       return NextResponse.json(
         { message: "Not authenticated" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -26,7 +26,7 @@ export const GET = auth(async function GET(req) {
     console.error("Error fetching folders:", error);
     return NextResponse.json(
       { message: "Internal server error", error: error.message },
-      { status: 500 },
+      { status: 500 }
     );
   }
 });
