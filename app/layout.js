@@ -31,7 +31,6 @@ export default function RootLayout({ children }) {
         >
           <Wrapper>{children}</Wrapper>
         </body>
-        
       </SessionProvider>
     </html>
   );

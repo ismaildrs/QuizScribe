@@ -103,7 +103,8 @@ model Flashcard {
 model Quiz {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   question String // Quiz question
-  options  String[] // Quiz options (multiple choice)
+  answer   String[] // Quiz answer
+  correct  Int // Index of the correct answer
   videoId  String   @db.ObjectId
   video    Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
 

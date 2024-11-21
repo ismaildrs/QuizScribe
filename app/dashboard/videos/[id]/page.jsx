@@ -45,7 +45,7 @@ import ErrorDialog from "@/components/ui/errorDialog";
 
 const VideoDetails = ({ video }) => (
   <Card className="mb-6">
-    <div className="relative aspect-video w-full max-w-md mx-auto">
+    <div className="relative w-full max-w-md mx-auto aspect-video">
       {video?.thumbnail ? (
         <Image
           src={video.thumbnail}
@@ -55,8 +55,8 @@ const VideoDetails = ({ video }) => (
           sizes="(max-width: 768px) 100vw, 300px"
         />
       ) : (
-        <div className="absolute inset-0 bg-secondary flex items-center justify-center rounded-t-lg">
-          <Play className="h-12 w-12 text-muted-foreground" />
+        <div className="absolute inset-0 flex items-center justify-center rounded-t-lg bg-secondary">
+          <Play className="w-12 h-12 text-muted-foreground" />
         </div>
       )}
     </div>
@@ -80,7 +80,7 @@ const FlashCards = ({ cards = [] }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       {cards.map((card, index) => (
         <Card
           key={index}
@@ -123,16 +123,14 @@ const Quiz = ({ questions = [] }) => {
   const getScore = () => {
     return Object.entries(selectedAnswers).reduce(
       (score, [questionIndex, answer]) => {
-        return (
-          score + (answer === questions[questionIndex].correctAnswer ? 1 : 0)
-        );
+        return score + (answer === questions[questionIndex].correct ? 1 : 0);
       },
       0
     );
   };
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto space-y-6">
       {questions.map((question, questionIndex) => (
         <Card key={questionIndex}>
           <CardHeader>
@@ -141,7 +139,7 @@ const Quiz = ({ questions = [] }) => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {question.options.map((option, optionIndex) => (
+            {question.answer.map((option, optionIndex) => (
               <Button
                 key={optionIndex}
                 variant={
@@ -151,7 +149,7 @@ const Quiz = ({ questions = [] }) => {
                 }
                 className={`w-full justify-start text-left ${
                   showResults
-                    ? optionIndex === question.correctAnswer
+                    ? optionIndex === question.correct
                       ? "bg-green-500 hover:bg-green-600"
                       : selectedAnswers[questionIndex] === optionIndex
                       ? "bg-red-500 hover:bg-red-600"
@@ -195,7 +193,7 @@ const Quiz = ({ questions = [] }) => {
 
 const Summary = ({ summary }) => (
   <Card>
-    <CardContent className="prose dark:prose-invert pt-6 max-w-none">
+    <CardContent className="pt-6 prose dark:prose-invert max-w-none">
       {summary ? (
         <div dangerouslySetInnerHTML={{ __html: summary }} />
       ) : (
@@ -206,14 +204,14 @@ const Summary = ({ summary }) => (
 );
 
 const LoadingComponent = () => (
-  <div className="container mx-auto p-6 space-y-8">
+  <div className="container p-6 mx-auto space-y-8">
     <Skeleton className="h-[400px] w-full rounded-lg" />
-    <Skeleton className="h-8 w-3/4" />
-    <Skeleton className="h-4 w-1/2" />
+    <Skeleton className="w-3/4 h-8" />
+    <Skeleton className="w-1/2 h-4" />
     <div className="space-y-4">
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-full" />
+      <Skeleton className="w-full h-10" />
+      <Skeleton className="w-full h-10" />
+      <Skeleton className="w-full h-10" />
     </div>
   </div>
 );
@@ -222,7 +220,7 @@ const UserMenu = () => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" size="icon">
-        <User className="h-5 w-5" />
+        <User className="w-5 h-5" />
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
@@ -319,20 +317,19 @@ export default function VideoPage({ params }) {
   return (
     <div className="min-h-screen bg-background">
       {errorMessage && <ErrorDialog message={errorMessage} />}
-      <main className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
+      <main className="container p-6 mx-auto">
+        <div className="flex items-center justify-between mb-6">
           <Button
             variant="ghost"
             onClick={() => router.back()}
             className="hover:bg-accent"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
           <div className="space-x-2">
-            
             <Button onClick={handleDownload}>
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="w-4 h-4 mr-2" />
               Download
             </Button>
           </div>
@@ -341,17 +338,17 @@ export default function VideoPage({ params }) {
         <VideoDetails video={video} />
 
         <Tabs defaultValue="summary" className="space-y-4">
-          <TabsList className="w-full justify-start">
+          <TabsList className="justify-start w-full">
             <TabsTrigger value="summary">
-              <List className="h-4 w-4 mr-2" />
+              <List className="w-4 h-4 mr-2" />
               Summary
             </TabsTrigger>
             <TabsTrigger value="flashcards">
-              <BookOpen className="h-4 w-4 mr-2" />
+              <BookOpen className="w-4 h-4 mr-2" />
               Flash Cards
             </TabsTrigger>
             <TabsTrigger value="quiz">
-              <Brain className="h-4 w-4 mr-2" />
+              <Brain className="w-4 h-4 mr-2" />
               Quiz
             </TabsTrigger>
           </TabsList>

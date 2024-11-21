@@ -1,9 +1,8 @@
 "use client";
 import React from "react";
-
 import { User } from "lucide-react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,34 +17,63 @@ import { Skeleton } from "./skeleton";
 export default function Header() {
   const session = useSession();
 
-  if (!session)
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/" });
+  };
+
+  if (session.status === "loading") {
     return (
       <div className="flex flex-col min-h-screen">
-        <header className="h-14 border-b">
-          <Skeleton className="h-full w-full" />
+        <header className="border-b h-14">
+          <Skeleton className="w-full h-full" />
         </header>
       </div>
     );
+  }
+
   return (
-    <header className="px-4 lg:px-6 h-14 flex items-center border-b dark:border-gray-700">
-      <Link href="/dashboard" className="flex items-center justify-center">
+    <header className="sticky top-0 z-50 flex items-center px-4 bg-white border-b lg:px-6 h-14 dark:bg-gray-900 dark:border-gray-700">
+      <Link
+        href="/dashboard"
+        className="flex items-center justify-center transition-opacity hover:opacity-80"
+        aria-label="Go to dashboard"
+      >
         <span className="text-2xl font-bold dark:text-white">QuizScribe</span>
       </Link>
-      <nav className="ml-auto flex items-center gap-4 sm:gap-6">
-        {session.data && (
+      <nav
+        className="flex items-center gap-4 ml-auto sm:gap-6"
+        role="navigation"
+        aria-label="User navigation"
+      >
+        {session.status === "authenticated" && session.data && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Avatar>
-                <AvatarImage src={session.data.user.image} alt="User" />
-                <AvatarFallback>
-                  <User />
-                </AvatarFallback>
-              </Avatar>
+              <button
+                className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:ring-blue-500"
+                aria-label="Open user menu"
+              >
+                <Avatar>
+                  <AvatarImage
+                    src={session.data.user?.image || ""}
+                    alt={session.data.user?.name || "User avatar"}
+                  />
+                  <AvatarFallback>
+                    <User className="w-5 h-5" />
+                  </AvatarFallback>
+                </Avatar>
+              </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>
+                {session.data.user?.name || "My Account"}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Sign Out</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleSignOut}
+                className="cursor-pointer"
+              >
+                Sign Out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}

@@ -26,6 +26,7 @@ export default function Component() {
   const [videoUrl, setVideoUrl] = useState("");
   const session = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     document.body.className = theme === "dark" ? "dark" : "";
@@ -39,6 +40,30 @@ export default function Component() {
       element.scrollIntoView({ behavior: "smooth" });
     }
     setIsMenuOpen(false);
+  };
+
+  const extractVideoId = (url) => {
+    try {
+      const urlObj = new URL(url);
+      if (urlObj.hostname.includes("youtube.com")) {
+        return urlObj.searchParams.get("v");
+      } else if (urlObj.hostname.includes("youtu.be")) {
+        return urlObj.pathname.substring(1);
+      }
+    } catch (error) {
+      return null;
+    }
+    return null;
+  };
+
+  const handleTransform = () => {
+    const videoId = extractVideoId(videoUrl);
+    if (videoId) {
+      router.push(`/dashboard?v=${videoId}`);
+    } else {
+      // You might want to add error handling here
+      alert("Please enter a valid YouTube URL");
+    }
   };
 
   const NavLinks = ({ className = "" }) => (
@@ -64,7 +89,7 @@ export default function Component() {
     <div className={`flex flex-col`}>
       <div className={`fixed inset-0 -z-20 `}></div>
       <FlickeringGrid
-        className="-z-10 fixed inset-0"
+        className="fixed inset-0 -z-10"
         squareSize={4}
         gridGap={6}
         color={theme == "dark" ? "#3D3D3D" : "#D2D2D2"}
@@ -77,8 +102,8 @@ export default function Component() {
         <Link href="/" className="flex items-center justify-center">
           <span className="text-2xl font-bold">QuizScribe</span>
         </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
-          <div className="hidden lg:flex gap-4 sm:gap-6 items-center">
+        <nav className="flex items-center gap-4 ml-auto sm:gap-6">
+          <div className="items-center hidden gap-4 lg:flex sm:gap-6">
             <NavLinks />
           </div>
           {session.data ? (
@@ -103,7 +128,7 @@ export default function Component() {
                 className="lg:hidden"
                 aria-label="Open Menu"
               >
-                <Menu className="h-6 w-6" />
+                <Menu className="w-6 h-6" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right">
@@ -111,16 +136,16 @@ export default function Component() {
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
               <div className="flex flex-col gap-4 mt-4">
-                <NavLinks className="w-full justify-start" />
+                <NavLinks className="justify-start w-full" />
               </div>
             </SheetContent>
           </Sheet>
         </nav>
       </header>
-      <main className="flex-1 flex flex-col justify-center items-center">
-        <section className="min-h-screen py-12 lg:py-24 xl:py-32 flex flex-col gap-10 items-center">
-          <div className="container px-4 md:px-6 flex flex-col gap-10">
-            <div className="flex flex-col gap-4 items-center text-center">
+      <main className="flex flex-col items-center justify-center flex-1">
+        <section className="flex flex-col items-center min-h-screen gap-10 py-12 lg:py-24 xl:py-32">
+          <div className="container flex flex-col gap-10 px-4 md:px-6">
+            <div className="flex flex-col items-center gap-4 text-center">
               <WordPullUp
                 words="Transform Video Content into Interactive Learning"
                 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none"
@@ -138,7 +163,9 @@ export default function Component() {
                     onChange={(e) => setVideoUrl(e.target.value)}
                     className={`flex-1 bg-white text-black`}
                   />
-                  <Button type="submit">Transform</Button>
+                  <Button type="submit" onClick={handleTransform}>
+                    Transform
+                  </Button>
                 </div>
                 <p className={`text-xs opacity-70`}>
                   Start learning smarter with quizscribe's AI-powered video
@@ -146,7 +173,7 @@ export default function Component() {
                 </p>
               </div>
             </div>
-            <div className="mt-16 flex justify-center">
+            <div className="flex justify-center mt-16">
               <div className="relative w-full max-w-2xl">
                 <motion.div
                   className="absolute inset-0 flex items-center justify-center"
@@ -156,7 +183,7 @@ export default function Component() {
                 >
                   <img
                     src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg"
-                    className="h-24 w-24 text-red-600"
+                    className="w-24 h-24 text-red-600"
                     alt="YouTube Logo"
                   />
                 </motion.div>
@@ -167,13 +194,13 @@ export default function Component() {
                   transition={{ duration: 3, repeat: Infinity }}
                 >
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="h-20 w-32 rounded-lg bg-primary/20 p-4">
-                      <div className="h-2 w-20 rounded bg-primary/40" />
-                      <div className="mt-2 h-2 w-16 rounded bg-primary/40" />
+                    <div className="w-32 h-20 p-4 rounded-lg bg-primary/20">
+                      <div className="w-20 h-2 rounded bg-primary/40" />
+                      <div className="w-16 h-2 mt-2 rounded bg-primary/40" />
                     </div>
-                    <div className="h-20 w-32 rounded-lg bg-primary/20 p-4">
-                      <div className="h-2 w-20 rounded bg-primary/40" />
-                      <div className="mt-2 h-2 w-16 rounded bg-primary/40" />
+                    <div className="w-32 h-20 p-4 rounded-lg bg-primary/20">
+                      <div className="w-20 h-2 rounded bg-primary/40" />
+                      <div className="w-16 h-2 mt-2 rounded bg-primary/40" />
                     </div>
                   </div>
                 </motion.div>
@@ -186,7 +213,7 @@ export default function Component() {
           className={`w-full py-12 md:py-24 lg:py-32 flex flex-col items-center border-t bg-white dark:bg-zinc-950`}
         >
           <div className="container px-4 md:px-6">
-            <h2 className="text-3xl font-bold text-center mb-12">Features</h2>
+            <h2 className="mb-12 text-3xl font-bold text-center">Features</h2>
             <div className="grid gap-10 sm:px-10 md:gap-16 md:grid-cols-3">
               {["Flashcards", "Summaries", "Quizzes"].map((feature, index) => (
                 <motion.div
@@ -196,7 +223,7 @@ export default function Component() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <div className="inline-block rounded-lg bg-primary px-3 py-1 text-sm text-primary-foreground">
+                  <div className="inline-block px-3 py-1 text-sm rounded-lg bg-primary text-primary-foreground">
                     {feature}
                   </div>
                   <h3 className="text-2xl font-bold">{feature}</h3>
@@ -214,7 +241,7 @@ export default function Component() {
           className={`w-full py-12 md:py-24 lg:py-32 flex flex-col items-center bg-white border-t dark:bg-zinc-950`}
         >
           <div className="container px-4 md:px-6">
-            <h2 className="text-3xl font-bold text-center mb-12">
+            <h2 className="mb-12 text-3xl font-bold text-center">
               How It Works
             </h2>
             <div className="flex flex-col items-center gap-8">
@@ -230,7 +257,7 @@ export default function Component() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.2 }}
                 >
-                  <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+                  <div className="flex items-center justify-center w-10 h-10 font-bold rounded-full bg-primary text-primary-foreground">
                     {index + 1}
                   </div>
                   <p className="text-xl">{step}</p>
@@ -241,7 +268,7 @@ export default function Component() {
         </section>
       </main>
       <footer className={`py-6 px-4 md:px-6 border-t`}>
-        <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
+        <div className="container flex flex-col items-center justify-between mx-auto sm:flex-row">
           <p className={`text-sm opacity-70`}>
             © 2024 quizscribe. All rights reserved.
           </p>
@@ -250,4 +277,3 @@ export default function Component() {
     </div>
   );
 }
-
