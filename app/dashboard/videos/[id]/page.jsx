@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useContext, use } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useContext } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   ArrowLeft,
@@ -9,13 +9,8 @@ import {
   BookOpen,
   Brain,
   List,
-  MessageSquare,
-  Folder,
+  Download,
   Plus,
-  Search,
-  Settings,
-  Moon,
-  Sun,
   User,
 } from "lucide-react";
 import { themeContext } from "@/lib/Contexts";
@@ -39,12 +34,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import ErrorDialog from "@/components/ui/errorDialog";
 
 const VideoDetails = ({ video }) => (
   <Card className="mb-6">
     <div className="relative aspect-video w-full max-w-md mx-auto">
-      {" "}
-      {/* Reduced max width */}
       {video?.thumbnail ? (
         <Image
           src={video.thumbnail}
@@ -55,14 +56,12 @@ const VideoDetails = ({ video }) => (
         />
       ) : (
         <div className="absolute inset-0 bg-secondary flex items-center justify-center rounded-t-lg">
-          <Play className="h-12 w-12 text-muted-foreground" />{" "}
-          {/* Adjusted Play icon size */}
+          <Play className="h-12 w-12 text-muted-foreground" />
         </div>
       )}
     </div>
     <CardHeader>
-      <CardTitle className="text-xl">{video?.title}</CardTitle>{" "}
-      {/* Slightly reduced title size */}
+      <CardTitle className="text-xl">{video?.title}</CardTitle>
       <CardDescription className="text-muted-foreground">
         {new Date(video?.createdAt).toLocaleDateString()}
       </CardDescription>
@@ -81,7 +80,7 @@ const FlashCards = ({ cards = [] }) => {
   };
 
   return (
-    <div className="space-y-4 max-w-3xl mx-auto">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {cards.map((card, index) => (
         <Card
           key={index}
@@ -128,7 +127,7 @@ const Quiz = ({ questions = [] }) => {
           score + (answer === questions[questionIndex].correctAnswer ? 1 : 0)
         );
       },
-      0,
+      0
     );
   };
 
@@ -155,8 +154,8 @@ const Quiz = ({ questions = [] }) => {
                     ? optionIndex === question.correctAnswer
                       ? "bg-green-500 hover:bg-green-600"
                       : selectedAnswers[questionIndex] === optionIndex
-                        ? "bg-red-500 hover:bg-red-600"
-                        : ""
+                      ? "bg-red-500 hover:bg-red-600"
+                      : ""
                     : ""
                 }`}
                 onClick={() =>
@@ -219,53 +218,6 @@ const LoadingComponent = () => (
   </div>
 );
 
-const ErrorComponent = ({ message }) => (
-  <div className="container mx-auto p-6 text-center">
-    <Card className="p-6">
-      <CardTitle className="text-red-500 mb-4">Error</CardTitle>
-      <CardDescription>{message}</CardDescription>
-      <Button className="mt-4" onClick={() => window.location.reload()}>
-        Try Again
-      </Button>
-    </Card>
-  </div>
-);
-
-const Header = ({ theme, setTheme }) => (
-  <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-    <div className="container flex h-14 items-center justify-between">
-      <div className="flex items-center gap-4">
-        <Link href="/" className="flex items-center space-x-2">
-          <Folder className="h-6 w-6" />
-          <span className="font-bold">Video Library</span>
-        </Link>
-        <div className="hidden md:flex md:w-[200px] lg:w-[300px]">
-          <Input
-            placeholder="Search videos..."
-            className="w-full"
-            type="search"
-            icon={<Search className="h-4 w-4" />}
-          />
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        >
-          {theme === "dark" ? (
-            <Sun className="h-5 w-5" />
-          ) : (
-            <Moon className="h-5 w-5" />
-          )}
-        </Button>
-        <UserMenu />
-      </div>
-    </div>
-  </header>
-);
-
 const UserMenu = () => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
@@ -276,9 +228,6 @@ const UserMenu = () => (
     <DropdownMenuContent align="end">
       <DropdownMenuLabel>My Account</DropdownMenuLabel>
       <DropdownMenuSeparator />
-      <DropdownMenuItem>
-        <Settings className="mr-2 h-4 w-4" /> Settings
-      </DropdownMenuItem>
       <DropdownMenuItem>Sign Out</DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
@@ -289,10 +238,15 @@ export default function VideoPage({ params }) {
   const { theme, setTheme } = useContext(themeContext);
   const [video, setVideo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Unwrap params using React.use()
-  const videoId = use(params).id;
+  const { id: videoId } = useParams();
+
+  const showError = (message) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(""), 5000);
+  };
 
   useEffect(() => {
     document.body.className = theme === "dark" ? "dark" : "";
@@ -307,13 +261,14 @@ export default function VideoPage({ params }) {
           throw new Error(
             res.status === 404
               ? "Video not found"
-              : "Failed to fetch video details",
+              : "Failed to fetch video details"
           );
         }
         const data = await res.json();
+        console.log(data);
         setVideo(data);
       } catch (err) {
-        setError(err.message);
+        showError(err.message);
       } finally {
         setIsLoading(false);
       }
@@ -325,21 +280,63 @@ export default function VideoPage({ params }) {
   }, [videoId]);
 
   if (isLoading) return <LoadingComponent />;
-  if (error) return <ErrorComponent message={error} />;
-  if (!video) return <ErrorComponent message="Video not found" />;
+
+  const handleDownload = async () => {
+    try {
+      const response = await fetch("/api/createApkg", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          folder: video.folderId,
+          flashcards: video.flashcards,
+        }),
+      });
+
+      if (!response.ok) {
+        setError("Error occurred while exporting flashcards.");
+      }
+      const { apkg } = await response.json();
+      const blob = new Blob([Buffer.from(apkg, "binary")], {
+        type: "application/apkg",
+      });
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = video.title.replaceAll(" ", "_") + ".apkg";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up the URL object
+      URL.revokeObjectURL(link.href);
+    } catch (e) {
+      showError(e.message);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      <Header theme={theme} setTheme={setTheme} />
+      {errorMessage && <ErrorDialog message={errorMessage} />}
       <main className="container mx-auto p-6">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="mb-6 hover:bg-accent"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
+        <div className="flex justify-between items-center mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+            className="hover:bg-accent"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <div className="space-x-2">
+            
+            <Button onClick={handleDownload}>
+              <Download className="h-4 w-4 mr-2" />
+              Download
+            </Button>
+          </div>
+        </div>
 
         <VideoDetails video={video} />
 

@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import LoadingComponent from "@/components/ui/Loading";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +40,59 @@ import {
 import { themeContext } from "@/lib/Contexts";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import Header from "@/components/ui/header";
+import ErrorDialog from "@/components/ui/errorDialog";
+
+const LoadingComponent = () => (
+  <div className="flex flex-col min-h-screen">
+    <header className="h-14 border-b">
+      <Skeleton className="h-full w-full" />
+    </header>
+    <main className="flex-1 p-4 md:p-6 space-y-6">
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-1/4" />
+          <Skeleton className="h-4 w-1/2" />
+        </CardHeader>
+        <CardContent className="flex items-center space-x-4">
+          <Skeleton className="h-20 w-20 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-1/3" />
+          <Skeleton className="h-4 w-2/3" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-10 w-full" />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-1/4" />
+          <Skeleton className="h-4 w-1/2" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-10 w-full mb-4" />
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    </main>
+    <footer className="h-16 border-t">
+      <Skeleton className="h-full w-full" />
+    </footer>
+  </div>
+);
 
 export default function Dashboard() {
   const { theme } = useContext(themeContext);
@@ -60,10 +112,13 @@ export default function Dashboard() {
   const [result, setResult] = useState({});
   const [folders, setFolders] = useState([]);
   const [selectedFolderId, setSelectedFolderId] = useState(null);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [isAddingFolder, setIsAddingFolder] = useState(false); // Added state variable
   const session = useSession();
   const router = useRouter();
 
   const showError = (message) => {
+    setTransformDialog(false);
     setErrorMessage(message);
     setTimeout(() => setErrorMessage(""), 5000);
   };
@@ -77,17 +132,17 @@ export default function Dashboard() {
       const response = await fetch(`/api/video?videoId=${id}`, {
         method: "GET",
       });
-      if (response.ok) {
-        const result = await response.json();
-        setIsLoading(false);
-        setIsImproving(true);
-        setVideoTitle(result.title);
-        setVideoImgUrl(result.thumbnail);
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
         showError(errorData.message || "Failed to fetch video information");
         setIsLoading(false);
       }
+
+      const result = await response.json();
+      setIsLoading(false);
+      setIsImproving(true);
+      setVideoTitle(result.title);
+      setVideoImgUrl(result.thumbnail);
     } catch (e) {
       showError("An error occurred while fetching video information");
       setIsLoading(false);
@@ -119,6 +174,7 @@ export default function Dashboard() {
         setResult(result);
         setIsProcessing(false);
         setIsComplete(true);
+        console.log(result);
       } else {
         const errorData = await response.json();
         showError(errorData.message || "Failed to process video");
@@ -158,18 +214,24 @@ export default function Dashboard() {
       }
     };
 
-    fetchFolders();
-    analyzeUrl();
+    const loadData = async () => {
+      await fetchFolders();
+      await analyzeUrl();
+      setIsDataLoaded(true);
+    };
+
+    loadData();
   }, []);
 
   useEffect(() => {
     document.body.className = theme === "dark" ? "dark" : "";
   }, [theme]);
 
-  if (!session || !session.data) return <LoadingComponent />;
+  if (!session || !session.data || !isDataLoaded) return <LoadingComponent />;
 
   const addFolder = async () => {
-    if (newFolderName.trim() !== "") {
+    if (newFolderName.trim() !== "" && !isAddingFolder) {
+      setIsAddingFolder(true);
       try {
         const response = await fetch("/api/folders/create", {
           method: "POST",
@@ -180,7 +242,7 @@ export default function Dashboard() {
 
         if (response.ok) {
           const newFolder = await response.json();
-          setFolders([...folders, newFolder]);
+          setFolders([...folders, newFolder.folder]);
           setNewFolderName("");
         } else {
           const errorData = await response.json();
@@ -188,6 +250,8 @@ export default function Dashboard() {
         }
       } catch (e) {
         showError("An error occurred while creating the folder");
+      } finally {
+        setIsAddingFolder(false);
       }
     }
   };
@@ -196,15 +260,7 @@ export default function Dashboard() {
     <div
       className={`flex flex-col min-h-screen ${theme === "dark" ? "dark" : ""}`}
     >
-      {/* Error Alert */}
-      {errorMessage && (
-        <div className="fixed top-4 right-4 z-50 w-full max-w-md">
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        </div>
-      )}
+      {errorMessage && <ErrorDialog message={errorMessage} />}
 
       <Dialog open={transformDialog} onOpenChange={setTransformDialog}>
         <DialogContent>
@@ -295,7 +351,7 @@ export default function Dashboard() {
                   </Card>
                 </div>
                 <Button asChild>
-                  <Link href={`/dashboard/${videoId}`}>
+                  <Link href={`/dashboard/videos/${result.savedVideo.id}`}>
                     View Learning Materials
                   </Link>
                 </Button>
@@ -304,29 +360,8 @@ export default function Dashboard() {
           </div>
         </DialogContent>
       </Dialog>
-      <header className="px-4 lg:px-6 h-14 flex items-center border-b dark:border-gray-700">
-        <Link href="/" className="flex items-center justify-center">
-          <span className="text-2xl font-bold dark:text-white">Similan</span>
-        </Link>
-        <nav className="ml-auto flex items-center gap-4 sm:gap-6">
-          <Button
-            variant="ghost"
-            className="text-sm font-medium dark:text-gray-300"
-          >
-            Analytics
-          </Button>
-          {session.data && (
-            <Avatar>
-              <AvatarImage src={session.data.user.image} alt="User" />
-              <AvatarFallback>
-                <User />
-              </AvatarFallback>
-            </Avatar>
-          )}
-        </nav>
-      </header>
-      <main className="flex-1 p-4 md:p-6 space-y-6 dark:bg-gray-900">
-        <Card className="dark:bg-gray-800">
+      <main className="flex-1 p-4 md:p-6 space-y-6 ">
+        <Card className="">
           {session.data && (
             <>
               <CardHeader>
@@ -357,7 +392,7 @@ export default function Dashboard() {
             </>
           )}
         </Card>
-        <Card className="dark:bg-gray-800">
+        <Card className="">
           <CardHeader>
             <CardTitle className="dark:text-white">
               Transform YouTube Video
@@ -373,7 +408,7 @@ export default function Dashboard() {
                 placeholder="Paste YouTube video URL"
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
-                className="flex-1 dark:bg-gray-700 dark:text-white"
+                className="flex-1  dark:text-white"
               />
               <Button
                 onClick={() => {
@@ -390,7 +425,7 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
-        <Card className="dark:bg-gray-800">
+        <Card className="">
           <CardHeader>
             <CardTitle className="dark:text-white">Your Folders</CardTitle>
             <CardDescription className="dark:text-gray-400">
@@ -404,11 +439,18 @@ export default function Dashboard() {
                   placeholder="New folder name"
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
-                  className="dark:bg-gray-700 dark:text-white"
+                  className=" dark:text-white"
+                  disabled={isAddingFolder} // Updated Input field
                 />
-                <Button onClick={addFolder}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Folder
+                <Button onClick={addFolder} disabled={isAddingFolder}>
+                  {" "}
+                  {/* Updated button */}
+                  {isAddingFolder ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="mr-2 h-4 w-4" />
+                  )}
+                  {isAddingFolder ? "Adding..." : "Add Folder"}
                 </Button>
               </div>
               <div className="grid gap-4">
@@ -418,8 +460,10 @@ export default function Dashboard() {
                     variant="outline"
                     className={`w-full justify-start text-left ${
                       selectedFolder === folder.id ? "bg-muted" : ""
-                    } dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600`}
-                    onClick={() => router.push(`/folders/${folder.id}`)}
+                    }  dark:text-white dark:hover:bg-gray-600`}
+                    onClick={() =>
+                      router.push(`/dashboard/folders/${folder.id}`)
+                    }
                   >
                     <Folder className="mr-2 h-4 w-4" />
                     {folder.name}
@@ -432,9 +476,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </main>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t dark:border-gray-700 dark:bg-gray-800">
+      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t dark:border-gray-700 ">
         <p className="text-xs text-muted-foreground dark:text-gray-400">
-          © 2024 Similan. All rights reserved.
+          © 2024 quizscribe. All rights reserved.
         </p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link

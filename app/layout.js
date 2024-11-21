@@ -18,7 +18,7 @@ const geistMono = localFont({
 });
 
 export const metadata = {
-  title: "Similan",
+  title: "QuizScribe",
   description: "Youtube video to course",
 };
 
@@ -31,6 +31,7 @@ export default function RootLayout({ children }) {
         >
           <Wrapper>{children}</Wrapper>
         </body>
+        
       </SessionProvider>
     </html>
   );

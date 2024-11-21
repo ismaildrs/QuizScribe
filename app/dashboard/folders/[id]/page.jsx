@@ -2,19 +2,8 @@
 
 import { useState, useEffect, useContext, use } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
-import {
-  ArrowLeft,
-  Folder,
-  Plus,
-  Search,
-  Settings,
-  Play,
-  Moon,
-  Sun,
-  User,
-} from "lucide-react";
+import { ArrowLeft, Plus, Play } from "lucide-react";
 import { themeContext } from "@/lib/Contexts";
 import {
   Card,
@@ -25,70 +14,9 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-
-const Header = ({ theme, setTheme }) => (
-  <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-    <div className="container flex h-14 items-center justify-between">
-      <div className="flex items-center gap-4">
-        <Link href="/" className="flex items-center space-x-2">
-          <Folder className="h-6 w-6" />
-          <span className="font-bold">Video Library</span>
-        </Link>
-        <div className="hidden md:flex md:w-[200px] lg:w-[300px]">
-          <Input
-            placeholder="Search videos..."
-            className="w-full"
-            type="search"
-            icon={<Search className="h-4 w-4" />}
-          />
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        >
-          {theme === "dark" ? (
-            <Sun className="h-5 w-5" />
-          ) : (
-            <Moon className="h-5 w-5" />
-          )}
-        </Button>
-        <UserMenu />
-      </div>
-    </div>
-  </header>
-);
-
-const UserMenu = () => (
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <Button variant="ghost" size="icon">
-        <User className="h-5 w-5" />
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
-      <DropdownMenuLabel>My Account</DropdownMenuLabel>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem>
-        <Settings className="mr-2 h-4 w-4" /> Settings
-      </DropdownMenuItem>
-      <DropdownMenuItem>Sign Out</DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
-);
+import ErrorDialog from "@/components/ui/errorDialog";
 
 // Update in the previous file (FolderDetailsPage)
 const VideoCard = ({ video }) => {
@@ -98,7 +26,7 @@ const VideoCard = ({ video }) => {
     <Card key={video.id} className="overflow-hidden">
       <div
         className="relative aspect-video w-full cursor-pointer"
-        onClick={() => router.push(`/videos/${video.id}`)}
+        onClick={() => router.push(`/dashboard/videos/${video.id}`)}
       >
         {video.thumbnail ? (
           <Image
@@ -113,14 +41,7 @@ const VideoCard = ({ video }) => {
             <Play className="h-12 w-12 text-muted-foreground" />
           </div>
         )}
-        <div className="absolute bottom-2 right-2">
-          <Badge
-            variant="secondary"
-            className="bg-background/80 backdrop-blur-sm"
-          >
-            {video.duration || "00:00"}
-          </Badge>
-        </div>
+        
       </div>
       <CardHeader>
         <CardTitle className="text-lg">{video.title}</CardTitle>
@@ -138,7 +59,7 @@ const VideoCard = ({ video }) => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.push(`/videos/${video.id}`)}
+            onClick={() => router.push(`/dashboard/videos/${video.id}`)}
           >
             View
           </Button>
@@ -179,25 +100,21 @@ const LoadingComponent = () => (
   </div>
 );
 
-const ErrorComponent = ({ message }) => (
-  <div className="container mx-auto p-6 text-center">
-    <div className="max-w-md mx-auto">
-      <h2 className="text-2xl font-bold text-destructive mb-4">Error</h2>
-      <p className="text-muted-foreground mb-4">{message}</p>
-      <Button onClick={() => window.location.reload()}>Try Again</Button>
-    </div>
-  </div>
-);
 
 export default function FolderDetailsPage({ params }) {
   const router = useRouter();
   const { theme, setTheme } = useContext(themeContext);
   const [folder, setFolder] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const resolvedParams = useParams();
   const folderId = resolvedParams.id;
+
+  const showError = (message) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(""), 5000);
+  };
 
   useEffect(() => {
     document.body.className = theme === "dark" ? "dark" : "";
@@ -213,7 +130,7 @@ export default function FolderDetailsPage({ params }) {
         console.log(data);
         setFolder(data);
       } catch (err) {
-        setError(err.message || "An unexpected error occurred.");
+        showError(err.message || "An unexpected error occurred.");
       } finally {
         setIsLoading(false);
       }
@@ -222,17 +139,18 @@ export default function FolderDetailsPage({ params }) {
   }, [folderId]);
 
   if (isLoading) return <LoadingComponent />;
-  if (error) return <ErrorComponent message={error} />;
 
   return (
     <div className="min-h-screen bg-background">
-      <Header theme={theme} setTheme={setTheme} />
-      <main className="container mx-auto p-6 space-y-8">
+      {errorMessage && <ErrorDialog message={errorMessage} />}
+      <main className="container mx-auto p-6 space-y-8 ">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
-              onClick={() => router.push("/folders")}
+              onClick={() => {
+                router.push("/dashboard/folders");
+              }}
               className="p-0 h-auto"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -246,7 +164,7 @@ export default function FolderDetailsPage({ params }) {
           </Button>
         </div>
 
-        <Card>
+        <Card className={""}>
           <CardHeader>
             <CardTitle>Videos</CardTitle>
             <CardDescription>

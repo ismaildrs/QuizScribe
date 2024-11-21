@@ -7,12 +7,12 @@ export const GET = auth(async function GET(req, { params }) {
     if (!req.auth) {
       return NextResponse.json(
         { message: "Not authenticated" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
-    const userId = req.auth.userId;
-    const videoId = params.videoId;
+    const userId = req.auth.user.userId;
+    const videoId = params.id;
 
     console.log("Fetching video:", { videoId }); // Debug log
 
@@ -43,12 +43,12 @@ export const GET = auth(async function GET(req, { params }) {
       return NextResponse.json({ message: "Video not found" }, { status: 404 });
     }
 
-    return NextResponse.json(video);
+    return NextResponse.json(video, { status: 200 });
   } catch (error) {
     console.error("Error fetching video:", error);
     return NextResponse.json(
       { message: "Internal server error", error: error.message },
-      { status: 500 },
+      { status: 500 }
     );
   }
 });

@@ -6,7 +6,7 @@ export default function LoadingComponent() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:text-black">
       <div className="text-4xl font-bold mb-8 text-slate-950 dark:text-white-300">
-        Similan
+        quizscribe
       </div>
       <div className="relative w-64 h-2 bg-slate-200 rounded-full overflow-hidden dark:bg-slate-100">
         <motion.div

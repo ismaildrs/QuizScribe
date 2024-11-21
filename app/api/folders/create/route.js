@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 
 export const POST = auth(async function POST(req) {
   try {
-    // Ensure authentication is valid
     if (!req.auth || !req.auth.user || !req.auth.user.id) {
       return NextResponse.json(
         { message: "Not authenticated" },
@@ -15,7 +14,6 @@ export const POST = auth(async function POST(req) {
     const body = await req.json();
     const userId = req.auth.user.id;
 
-    // Validate input
     if (!body.name) {
       return NextResponse.json(
         { message: "Folder name is required" },
@@ -23,7 +21,6 @@ export const POST = auth(async function POST(req) {
       );
     }
 
-    // Check if the folder already exists for this user
     const folderExist = await prisma.folder.findFirst({
       where: {
         name: body.name,
@@ -38,7 +35,6 @@ export const POST = auth(async function POST(req) {
       );
     }
 
-    // Create the folder
     const folder = await prisma.folder.create({
       data: {
         name: body.name,
@@ -55,7 +51,7 @@ export const POST = auth(async function POST(req) {
       { status: 200 }
     );
   } catch (e) {
-    console.error("Error creating folder:", e); // Log the error for debugging
+    console.error("Error creating folder:", e);
     return NextResponse.json(
       { message: "An unexpected error occurred" },
       { status: 500 }
