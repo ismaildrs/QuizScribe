@@ -1,30 +1,15 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
-import {
-  ArrowLeft,
-  Play,
-  BookOpen,
-  Brain,
-  List,
-  Download,
-  Plus,
-  User,
-} from "lucide-react";
-import { themeContext } from "@/lib/Contexts";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
-import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,41 +18,97 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import ErrorDialog from "@/components/ui/errorDialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { themeContext } from "@/lib/Contexts";
+import {
+  ArrowLeft,
+  BookOpen,
+  Brain,
+  Calendar,
+  Clock,
+  Download,
+  List,
+  Play,
+  Share2,
+  User,
+} from "lucide-react";
+import moment from "moment";
+import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
+import { useContext, useEffect, useState } from "react";
 
-const VideoDetails = ({ video }) => (
-  <Card className="mb-6">
-    <div className="relative w-full max-w-md mx-auto aspect-video">
-      {video?.thumbnail ? (
-        <Image
-          src={video.thumbnail}
-          alt={video.title}
-          fill
-          className="object-cover rounded-t-lg"
-          sizes="(max-width: 768px) 100vw, 300px"
-        />
-      ) : (
-        <div className="absolute inset-0 flex items-center justify-center rounded-t-lg bg-secondary">
-          <Play className="w-12 h-12 text-muted-foreground" />
+const VideoDetails = ({ video }) => {
+  const formattedDate = moment(video?.createdAt).format("MMMM D, YYYY");
+  const duration = video?.duration || "3:45"; // Fallback duration
+
+  return (
+    <Card className="group w-full max-w-md mx-auto overflow-hidden transition-all duration-300 hover:shadow-lg">
+      <div className="relative w-full aspect-video">
+        {video?.thumbnail ? (
+          <div className="relative w-full h-full">
+            <Image
+              src={video.thumbnail}
+              alt={video.title}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, 300px"
+            />
+            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <Badge className="absolute top-3 right-3 bg-black/70">
+              <Clock className="w-3 h-3 mr-1" />
+              {duration}
+            </Badge>
+          </div>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
+            <Play className="w-16 h-16 text-white/80 transition-transform duration-300 group-hover:scale-110" />
+          </div>
+        )}
+      </div>
+
+      <CardHeader className="space-y-2">
+        <div className="flex items-start justify-between">
+          <CardTitle className="text-xl font-bold line-clamp-2 group-hover:text-primary transition-colors duration-300">
+            {video?.title || "Untitled Video"}
+          </CardTitle>
+          <Button variant="ghost" size="icon" className="shrink-0">
+            <Share2 className="w-5 h-5" />
+          </Button>
         </div>
-      )}
-    </div>
-    <CardHeader>
-      <CardTitle className="text-xl">{video?.title}</CardTitle>
-      <CardDescription className="text-muted-foreground">
-        {new Date(video?.createdAt).toLocaleDateString()}
-      </CardDescription>
-    </CardHeader>
-  </Card>
-);
+        <CardDescription className="flex items-center text-sm text-muted-foreground">
+          <Calendar className="w-4 h-4 mr-2" />
+          {formattedDate}
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent className="text-sm text-muted-foreground line-clamp-2">
+        {video?.description || "No description available"}
+      </CardContent>
+
+      <CardFooter className="flex justify-between pt-4 border-t">
+        <div className="flex space-x-2">
+          <Badge variant="secondary" className="hover:bg-secondary/80">
+            {video?.category || "Uncategorized"}
+          </Badge>
+          {video?.isNew && (
+            <Badge variant="default" className="bg-primary hover:bg-primary/90">
+              New
+            </Badge>
+          )}
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-primary hover:text-primary/90"
+        >
+          Watch Now
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+};
 
 const FlashCards = ({ cards = [] }) => {
   const [flippedCards, setFlippedCards] = useState({});
@@ -335,36 +376,42 @@ export default function VideoPage({ params }) {
           </div>
         </div>
 
-        <VideoDetails video={video} />
+        <div className="flex flex-col gap-6 lg:flex-row">
+          <div className="w-full lg:w-1/3">
+            <VideoDetails video={video} />
+          </div>
 
-        <Tabs defaultValue="summary" className="space-y-4">
-          <TabsList className="justify-start w-full">
-            <TabsTrigger value="summary">
-              <List className="w-4 h-4 mr-2" />
-              Summary
-            </TabsTrigger>
-            <TabsTrigger value="flashcards">
-              <BookOpen className="w-4 h-4 mr-2" />
-              Flash Cards
-            </TabsTrigger>
-            <TabsTrigger value="quiz">
-              <Brain className="w-4 h-4 mr-2" />
-              Quiz
-            </TabsTrigger>
-          </TabsList>
+          <div className="w-full lg:w-2/3">
+            <Tabs defaultValue="summary" className="space-y-4">
+              <TabsList className="justify-start w-full">
+                <TabsTrigger value="summary">
+                  <List className="w-4 h-4 mr-2" />
+                  Summary
+                </TabsTrigger>
+                <TabsTrigger value="flashcards">
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Flash Cards
+                </TabsTrigger>
+                <TabsTrigger value="quiz">
+                  <Brain className="w-4 h-4 mr-2" />
+                  Quiz
+                </TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="summary">
-            <Summary summary={video.summary} />
-          </TabsContent>
+              <TabsContent value="summary">
+                <Summary summary={video.summary} />
+              </TabsContent>
 
-          <TabsContent value="flashcards">
-            <FlashCards cards={video.flashcards} />
-          </TabsContent>
+              <TabsContent value="flashcards">
+                <FlashCards cards={video.flashcards} />
+              </TabsContent>
 
-          <TabsContent value="quiz">
-            <Quiz questions={video.quizzes} />
-          </TabsContent>
-        </Tabs>
+              <TabsContent value="quiz">
+                <Quiz questions={video.quizzes} />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
       </main>
     </div>
   );

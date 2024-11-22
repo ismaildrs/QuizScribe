@@ -46,50 +46,50 @@ import ErrorDialog from "@/components/ui/errorDialog";
 
 const LoadingComponent = () => (
   <div className="flex flex-col min-h-screen">
-    <header className="h-14 border-b">
-      <Skeleton className="h-full w-full" />
+    <header className="border-b h-14">
+      <Skeleton className="w-full h-full" />
     </header>
-    <main className="flex-1 p-4 md:p-6 space-y-6">
+    <main className="flex-1 p-4 space-y-6 md:p-6">
       <Card>
         <CardHeader>
-          <Skeleton className="h-6 w-1/4" />
-          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="w-1/4 h-6" />
+          <Skeleton className="w-1/2 h-4" />
         </CardHeader>
         <CardContent className="flex items-center space-x-4">
-          <Skeleton className="h-20 w-20 rounded-full" />
+          <Skeleton className="w-20 h-20 rounded-full" />
           <div className="space-y-2">
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-48" />
+            <Skeleton className="w-32 h-6" />
+            <Skeleton className="w-24 h-4" />
+            <Skeleton className="w-48 h-4" />
           </div>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <Skeleton className="h-6 w-1/3" />
-          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="w-1/3 h-6" />
+          <Skeleton className="w-2/3 h-4" />
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-10 w-full" />
+          <Skeleton className="w-full h-10" />
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <Skeleton className="h-6 w-1/4" />
-          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="w-1/4 h-6" />
+          <Skeleton className="w-1/2 h-4" />
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-10 w-full mb-4" />
+          <Skeleton className="w-full h-10 mb-4" />
           <div className="space-y-2">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
+            <Skeleton className="w-full h-10" />
+            <Skeleton className="w-full h-10" />
+            <Skeleton className="w-full h-10" />
           </div>
         </CardContent>
       </Card>
     </main>
     <footer className="h-16 border-t">
-      <Skeleton className="h-full w-full" />
+      <Skeleton className="w-full h-full" />
     </footer>
   </div>
 );
@@ -277,7 +277,7 @@ export default function Dashboard() {
             {(isProcessing || isComplete || isImproving) &&
               videoImgUrl &&
               videoTitle && (
-                <div className="space-y-3 w-full">
+                <div className="w-full space-y-3">
                   <div className="relative flex flex-col gap-2">
                     <img
                       src={videoImgUrl}
@@ -286,7 +286,7 @@ export default function Dashboard() {
                     />
                     {isProcessing && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
-                        <Loader2 className="w-8 h-8 animate-spin text-white" />
+                        <Loader2 className="w-8 h-8 text-white animate-spin" />
                       </div>
                     )}
                   </div>
@@ -312,7 +312,7 @@ export default function Dashboard() {
                         </Select>
                       </div>
 
-                      <div className="flex my-2 space-x-2 items-center">
+                      <div className="flex items-center my-2 space-x-2">
                         <Input
                           placeholder="What do you want to focus on?"
                           value={videoPrompt}
@@ -332,7 +332,7 @@ export default function Dashboard() {
               )}
             {isComplete && result && (
               <>
-                <div className="grid grid-cols-2 gap-4 w-full">
+                <div className="grid w-full grid-cols-2 gap-4">
                   <Card>
                     <CardHeader>
                       <CardTitle>Flashcards</CardTitle>
@@ -360,7 +360,7 @@ export default function Dashboard() {
           </div>
         </DialogContent>
       </Dialog>
-      <main className="flex-1 p-4 md:p-6 space-y-6 ">
+      <main className="flex-1 p-4 space-y-6 md:p-6 ">
         <Card className="">
           {session.data && (
             <>
@@ -371,10 +371,10 @@ export default function Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex items-center space-x-4">
-                <Avatar className="h-20 w-20">
+                <Avatar className="w-20 h-20">
                   <AvatarImage src={session.data.user.image} alt="User" />
                   <AvatarFallback>
-                    <User className="h-10 w-10" />
+                    <User className="w-10 h-10" />
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -384,7 +384,7 @@ export default function Dashboard() {
                   <p className="text-muted-foreground dark:text-gray-400">
                     Learning enthusiast
                   </p>
-                  <p className="text-sm text-muted-foreground mt-1 dark:text-gray-400">
+                  <p className="mt-1 text-sm text-muted-foreground dark:text-gray-400">
                     {session.data.user.email}
                   </p>
                 </div>
@@ -408,7 +408,7 @@ export default function Dashboard() {
                 placeholder="Paste YouTube video URL"
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
-                className="flex-1  dark:text-white"
+                className="flex-1 dark:text-white"
               />
               <Button
                 onClick={() => {
@@ -446,9 +446,9 @@ export default function Dashboard() {
                   {" "}
                   {/* Updated button */}
                   {isAddingFolder ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : (
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Plus className="w-4 h-4 mr-2" />
                   )}
                   {isAddingFolder ? "Adding..." : "Add Folder"}
                 </Button>
@@ -465,10 +465,10 @@ export default function Dashboard() {
                       router.push(`/dashboard/folders/${folder.id}`)
                     }
                   >
-                    <Folder className="mr-2 h-4 w-4" />
+                    <Folder className="w-4 h-4 mr-2" />
                     {folder.name}
                     <span className="ml-auto"></span>
-                    <ChevronRight className="ml-2 h-4 w-4" />
+                    <ChevronRight className="w-4 h-4 ml-2" />
                   </Button>
                 ))}
               </div>
@@ -476,11 +476,11 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </main>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t dark:border-gray-700 ">
+      <footer className="flex flex-col items-center w-full gap-2 px-4 py-6 border-t sm:flex-row shrink-0 md:px-6 dark:border-gray-700 ">
         <p className="text-xs text-muted-foreground dark:text-gray-400">
           © 2024 quizscribe. All rights reserved.
         </p>
-        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
+        <nav className="flex gap-4 sm:ml-auto sm:gap-6">
           <Link
             href="#"
             className="text-xs hover:underline underline-offset-4 dark:text-gray-300"
