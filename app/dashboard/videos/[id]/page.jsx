@@ -30,6 +30,7 @@ import {
   Clock,
   Download,
   List,
+  Paperclip,
   Play,
   Share2,
   User,
@@ -38,10 +39,10 @@ import moment from "moment";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
+import mermaid from "mermaid";
 
-const VideoDetails = ({ video }) => {
+const VideoDetails = ({ video , videoId}) => {
   const formattedDate = moment(video?.createdAt).format("MMMM D, YYYY");
-  const duration = video?.duration || "3:45"; // Fallback duration
 
   return (
     <Card className="group w-full max-w-md mx-auto overflow-hidden transition-all duration-300 hover:shadow-lg">
@@ -56,10 +57,7 @@ const VideoDetails = ({ video }) => {
               sizes="(max-width: 768px) 100vw, 300px"
             />
             <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <Badge className="absolute top-3 right-3 bg-black/70">
-              <Clock className="w-3 h-3 mr-1" />
-              {duration}
-            </Badge>
+            
           </div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
@@ -102,6 +100,7 @@ const VideoDetails = ({ video }) => {
           variant="ghost"
           size="sm"
           className="text-primary hover:text-primary/90"
+          onClick={()=>{window.open(video.url)}}
         >
           Watch Now
         </Button>
@@ -257,20 +256,25 @@ const LoadingComponent = () => (
   </div>
 );
 
-const UserMenu = () => (
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <Button variant="ghost" size="icon">
-        <User className="w-5 h-5" />
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
-      <DropdownMenuLabel>My Account</DropdownMenuLabel>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem>Sign Out</DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
-);
+const Diagram = ({ markdown }) => {
+  useEffect(() => {
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "default",
+      securityLevel: "loose",
+    });
+
+    mermaid.contentLoaded();
+  }, [markdown]);
+
+  return (
+    <Card>
+      <CardContent className="pt-6 prose dark:prose-invert max-w-none">
+        <div className="mermaid">{markdown}</div>
+      </CardContent>
+    </Card>
+  );
+};
 
 export default function VideoPage({ params }) {
   const router = useRouter();
@@ -371,14 +375,14 @@ export default function VideoPage({ params }) {
           <div className="space-x-2">
             <Button onClick={handleDownload}>
               <Download className="w-4 h-4 mr-2" />
-              Download
+              Flashcards to Anki 
             </Button>
           </div>
         </div>
 
         <div className="flex flex-col gap-6 lg:flex-row">
           <div className="w-full lg:w-1/3">
-            <VideoDetails video={video} />
+            <VideoDetails video={video}  />
           </div>
 
           <div className="w-full lg:w-2/3">
@@ -396,6 +400,10 @@ export default function VideoPage({ params }) {
                   <Brain className="w-4 h-4 mr-2" />
                   Quiz
                 </TabsTrigger>
+                <TabsTrigger value="diagram">
+                  <Paperclip className="w-4 h-4 mr-2" />
+                  Diagram
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="summary">
@@ -409,6 +417,12 @@ export default function VideoPage({ params }) {
               <TabsContent value="quiz">
                 <Quiz questions={video.quizzes} />
               </TabsContent>
+
+              {video.diagram && (
+                <TabsContent value="diagram">
+                  <Diagram markdown={video.diagram} />
+                </TabsContent>
+              )}
             </Tabs>
           </div>
         </div>

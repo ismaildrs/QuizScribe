@@ -19,15 +19,16 @@ export async function POST(req) {
   try {
     console.log("Processing videoId:", videoId); // Fetch transcript
     const result = await getTranscript(videoId, prompt);
-    const { summary, flashCards, quizzes } = result; // Assuming the API returns these fields
-    console.log(result); // Save video and related data to the database
+    console.log(result);
+    const { summary, flashCards, quizzes, diagram } = result; // Assuming the API returns these fields
     const savedVideo = await prisma.video.create({
       data: {
         title,
         url,
         thumbnail,
-        summary,
         folderId,
+        summary,
+        diagram,
         flashcards: {
           create: flashCards.map((fc) => ({
             question: fc.question,
@@ -37,8 +38,8 @@ export async function POST(req) {
         quizzes: {
           create: quizzes.map((quiz) => ({
             question: quiz.question,
-            answer: quiz.answer,
-            correct: quiz.correct,
+            answer: quiz.answers,
+            correct: quiz.correctIndex,
           })),
         },
       },

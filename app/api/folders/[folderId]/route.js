@@ -11,7 +11,7 @@ export const GET = auth(async function GET(req, { params }) {
       );
     }
 
-    const userId = req.auth.userId;
+    const userId = req.auth.user.userId;
     const folderId = params.folderId;
 
     console.log("Fetching folder:", { folderId }); // Debug log

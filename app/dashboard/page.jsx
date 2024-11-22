@@ -176,7 +176,7 @@ export default function Dashboard() {
         setIsComplete(true);
         console.log(result);
       } else {
-        const errorData = await response.json();
+        // const errorData = await response.json();
         showError(errorData.message || "Failed to process video");
         setIsProcessing(false);
       }

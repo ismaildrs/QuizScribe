@@ -84,6 +84,7 @@ model Video {
   flashcards Flashcard[] // Flashcards related to this video
   quizzes    Quiz[] // Quizzes related to this video
   summary    String? // Summary specific to this video
+  diagram    String? // Summary specific to this video
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

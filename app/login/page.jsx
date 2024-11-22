@@ -33,25 +33,12 @@ export default function LoginPage() {
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-background to-muted">
       <header className="flex items-center px-4 lg:px-6 h-14">
         <Link href="/" className="flex items-center justify-center">
-          <span className="text-2xl font-bold">quizscribe</span>
+          <span className="text-2xl font-bold">QuizScribe</span>
         </Link>
       </header>
       <main className="flex items-center justify-center flex-1 p-4">
         <Card className="w-full max-w-md">{children}</Card>
       </main>
-      <footer className="flex flex-col items-center w-full gap-2 px-4 py-6 border-t sm:flex-row shrink-0 md:px-6">
-        <p className="text-xs text-muted-foreground">
-          © 2024 quizscribe. All rights reserved.
-        </p>
-        <nav className="flex gap-4 sm:ml-auto sm:gap-6">
-          <Link href="#" className="text-xs hover:underline underline-offset-4">
-            Terms of Service
-          </Link>
-          <Link href="#" className="text-xs hover:underline underline-offset-4">
-            Privacy
-          </Link>
-        </nav>
-      </footer>
     </div>
   );
 

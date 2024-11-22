@@ -32,7 +32,7 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 flex items-center px-4 bg-white border-b lg:px-6 h-14 dark:bg-gray-900 dark:border-gray-700">
+    <header className="sticky top-0 z-50 flex items-center px-4 border-b bg-white dark:bg-black lg:px-6 h-14  dark:border-gray-700">
       <Link
         href="/dashboard"
         className="flex items-center justify-center transition-opacity hover:opacity-80"
