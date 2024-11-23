@@ -476,25 +476,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </main>
-      <footer className="flex flex-col items-center w-full gap-2 px-4 py-6 border-t sm:flex-row shrink-0 md:px-6 dark:border-gray-700 ">
-        <p className="text-xs text-muted-foreground dark:text-gray-400">
-          © 2024 quizscribe. All rights reserved.
-        </p>
-        <nav className="flex gap-4 sm:ml-auto sm:gap-6">
-          <Link
-            href="#"
-            className="text-xs hover:underline underline-offset-4 dark:text-gray-300"
-          >
-            Terms of Service
-          </Link>
-          <Link
-            href="#"
-            className="text-xs hover:underline underline-offset-4 dark:text-gray-300"
-          >
-            Privacy
-          </Link>
-        </nav>
-      </footer>
+      
     </div>
   );
 }
