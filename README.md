@@ -1,5 +1,4 @@
-# ![QuizScribe Logo](public/logo.png) QuizScribe  
-
+# <img src="public/logo.png" alt="QuizScribe Logo" width="60" height="60"/> QuizScribe  
 ![License: Non-Commercial](https://img.shields.io/badge/License-Non--Commercial-red)  
 ![Version](https://img.shields.io/badge/Version-1.0-blue)  
 ![Platform](https://img.shields.io/badge/Platform-Web%20%26%20Extension-green)
@@ -7,13 +6,10 @@
 **QuizScribe** is your gateway to smarter learning. This innovative platform transforms YouTube videos into interactive courses, allowing you to actively engage with content through summaries, flashcards, quizzes, and diagrams. Powered by cutting-edge AI technologies like **AssemblyAI**, QuizScribe redefines how knowledge is absorbed and retained, making learning more engaging and efficient.
 
 ---
-
 ![QuizScribe Preview](public/quizscribe-preview.png)
 
 ---
-
 ## 🚀 **Features**
-
 - **Summaries**: Quickly review the key points of any video.
 - **Flashcards**: Automatically generate study cards and export them to Anki for extended learning.  
 - **Quizzes**: Test your knowledge with personalized, AI-generated multiple-choice questions.  
@@ -22,16 +18,12 @@
 - **Browser Extension**: Seamlessly transform any YouTube video into a learning tool with a single click.
 
 ---
-
 ## 🌐 **Quick Links**
-
 - **Chrome Extension Repository**: [QuizScribe Chrome Extension](https://github.com/ismaildrs/quizscribe-extention)  
 - **Blog Post**: [QuizScribe on Dev.to](https://dev.to/ismail_drissi_32520264908/quizscribe-turning-youtube-videos-into-interactive-learning-tools-4l7g)
 
 ---
-
 ## 🛠️ **Setup and Installation**
-
 ### Requirements
 - [Node.js](https://nodejs.org/en/)  
 - [Next.js](https://nextjs.org/)
@@ -42,12 +34,10 @@
    git clone https://github.com/ismaildrs/quizscribe.git
    cd quizscribe
    ```
-
 2. Install dependencies:  
    ```bash
    npm install
    ```
-
 3. Set up environment variables:  
    Create a `.env` file in the root directory with the following values:  
    ```
@@ -59,7 +49,6 @@
    YOUTUBE_API_KEY=<your_youtube_api_key>
    DATABASE_URL=<your_mongodb_connection_string>
    ```
-
    **Variable Details**:
    - **AUTH_SECRET**: A secure key for authentication.
    - **AUTH_GOOGLE_ID** and **AUTH_GOOGLE_SECRET**: Obtain from Google Cloud Console under OAuth 2.0.
@@ -74,23 +63,18 @@
    npx prisma generate
    npx prisma db push
    ```
-
 5. Start the development server:  
    ```bash
    npm run dev
    ```
-
 6. Open the app in your browser: [http://localhost:3000](http://localhost:3000).
 
 ---
-
 ## 🧑‍💻 **About Us**
-
 Created with passion by:  
-[![Ismail Drissi](https://avatars.githubusercontent.com/ismaildrs?s=100)](https://github.com/ismaildrs)  
-[**Ismail Drissi**](https://github.com/ismaildrs)  
+<a href="https://github.com/ismaildrs/quizscribe/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ismaildrs/quizscribe" />
+</a>
 
-[![Imad Idali Ouali](https://avatars.githubusercontent.com/ImadIdaliouali?s=100)](https://github.com/ImadIdaliouali)  
-[**Imad Idali Ouali**](https://github.com/ImadIdaliouali)  
 
 Together, we aim to make online learning smarter, more engaging, and more accessible.
