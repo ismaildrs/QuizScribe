@@ -1,0 +1,114 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  folders       Folder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Folder {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  name   String // Name of the folder
+  userId String  @db.ObjectId
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videos Video[] // A folder can have multiple videos
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Video {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  title      String // Title of the video
+  thumbnail  String // URL or path to the thumbnail
+  url        String // URL or path to the video
+  folderId   String      @db.ObjectId
+  folder     Folder      @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  flashcards Flashcard[] // Flashcards related to this video
+  quizzes    Quiz[] // Quizzes related to this video
+  summary    String? // Summary specific to this video
+  diagram    String? // Summary specific to this video
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Flashcard {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  question String // Flashcard question
+  answer   String // Flashcard answer
+  videoId  String @db.ObjectId
+  video    Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Quiz {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  question String // Quiz question
+  answer   String[] // Quiz answer
+  correct  Int // Index of the correct answer
+  videoId  String   @db.ObjectId
+  video    Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
