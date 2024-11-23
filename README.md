@@ -1,5 +1,4 @@
 # <img src="public/logo.png" alt="QuizScribe Logo" width="60" height="60"/> QuizScribe  
-![License: Non-Commercial](https://img.shields.io/badge/License-Non--Commercial-red)  
 ![Version](https://img.shields.io/badge/Version-1.0-blue)  
 ![Platform](https://img.shields.io/badge/Platform-Web%20%26%20Extension-green)
 
@@ -72,9 +71,9 @@
 ---
 ## 🧑‍💻 **About Us**
 Created with passion by:  
+
 <a href="https://github.com/ismaildrs/quizscribe/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=ismaildrs/quizscribe" />
 </a>
-
 
 Together, we aim to make online learning smarter, more engaging, and more accessible.
