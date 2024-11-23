@@ -18,7 +18,7 @@
 
 ---
 ## 🌐 **Quick Links**
-- **Chrome Extension Repository**: [QuizScribe Chrome Extension](https://github.com/ismaildrs/quizscribe-extention)  
+- **Chrome Extension Repository**: [QuizScribe Chrome Extension](https://github.com/ismaildrs/quizscribe-extension)  
 - **Blog Post**: [QuizScribe on Dev.to](https://dev.to/ismail_drissi_32520264908/quizscribe-turning-youtube-videos-into-interactive-learning-tools-4l7g)
 
 ---
@@ -44,7 +44,6 @@
    AUTH_GOOGLE_ID=<your_google_client_id>
    AUTH_GOOGLE_SECRET=<your_google_client_secret>
    ASSEMBLYAI_API_KEY=<your_assemblyai_api_key>
-   GROQAI_API_KEY=<your_groqai_api_key>
    YOUTUBE_API_KEY=<your_youtube_api_key>
    DATABASE_URL=<your_mongodb_connection_string>
    ```
@@ -52,7 +51,6 @@
    - **AUTH_SECRET**: A secure key for authentication.
    - **AUTH_GOOGLE_ID** and **AUTH_GOOGLE_SECRET**: Obtain from Google Cloud Console under OAuth 2.0.
    - **ASSEMBLYAI_API_KEY**: Create an account at [AssemblyAI](https://www.assemblyai.com/).
-   - **GROQAI_API_KEY**: Sign up at [GROQAI](https://console.groq.com/keys) for API access.
    - **YOUTUBE_API_KEY**: Enable the YouTube Data API in [Google Cloud Console](https://console.cloud.google.com/).
    - **DATABASE_URL**: Your MongoDB connection string, available on [MongoDB Atlas](https://www.mongodb.com/atlas/database).
 
